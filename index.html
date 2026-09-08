@@ -82,7 +82,7 @@
         <div class="funding-body">
           <label>Samorząd / gmina<select id="fundingMunicipality" aria-controls="fundingDetails"></select></label>
           <div id="fundingDetails" aria-live="polite"></div>
-          <p class="funding-note">Kwota trafia do organu prowadzącego placówkę — nie jest świadczeniem dla rodzica ani automatyczną obniżką czesnego. Podane stawki dotyczą dziecka bez orzeczenia; przy orzeczeniu kwota jest ustalana odrębnie. Weryfikacja źródeł: 03.09.2026.</p>
+          <p class="funding-note">Kwota trafia do organu prowadzącego placówkę — nie jest świadczeniem dla rodzica ani automatyczną obniżką czesnego. Podane stawki dotyczą dziecka bez orzeczenia; przy orzeczeniu kwota jest ustalana odrębnie. Ostatnia aktualizacja źródeł: 08.09.2026.</p>
           <p class="funding-note">Zasada ogólna: niepubliczne przedszkole otrzymuje co najmniej 75% PKD, a niepubliczny punkt co najmniej 40%; konkurs lub uchwała gminy mogą podnieść stawkę. <a href="https://www.gov.pl/web/edukacja/finansowanie-placowek-wychowania-przedszkolnego" target="_blank" rel="noreferrer">Wyjaśnienie MEN</a>.</p>
         </div>
       </details>
@@ -105,6 +105,7 @@
     const fundingData = {
       'Czernica': { asOf:'31.03.2026', pkd:'1 817,54 zł', preschool:'1 363,16 zł', point:'727,02 zł', note:'Stawki 75% i 40% wyliczone z oficjalnej miesięcznej PKD.', source:'https://bip.czernica.pl/files/files/Aktualizacja%20PKD%20na%20BIP_III.2026.pdf', sourceLabel:'BIP Gminy Czernica — aktualizacja PKD' },
       'Długołęka': { asOf:'09.01.2026', pkd:'2 155,23 zł', preschool:'1 616,42 zł', point:'862,09 zł', note:'Kwoty miesięczne opublikowane w zarządzeniu Wójta Gminy Długołęka.', source:'https://dlugoleka.bip.net.pl/kategorie/430-styczen/artykuly/3625-zarzadzenie-nr-62026-wojta-gminy-dlugoleka-wojta-gminy-dlugoleka-z-dnia-9-stycznia-2026-r-w-sprawie-ogloszenia-informacji-z-zakresu-udzielania-dotacji-dla-placowek-wychowania-przedszkolnego', sourceLabel:'BIP Gminy Długołęka — zarządzenie 6/2026' },
+      'Domaniów': { asOf:'08.09.2026 (stawki obowiązują od 01.01.2026)', rows:[{label:'przedszkole publiczne / mies.',value:'1 658,59 zł'},{label:'oddział przedszkolny w szkole / mies.',value:'709,83 zł'},{label:'przedszkole publiczne / rocznie',value:'19 903,13 zł'},{label:'oddział przedszkolny / rocznie',value:'8 518,03 zł'}], popupText:'PKD dla przedszkola publicznego: 1 658,59 zł miesięcznie. Gmina nie wykazała przedszkoli niepublicznych.', note:'Gmina poinformowała, że nie ma przedszkoli niepublicznych. Statystyczna liczba dzieci według SIO na 30.09.2025: 132 w przedszkolach publicznych (w tym 4 z orzeczeniem) oraz 26 w oddziałach przedszkolnych w szkołach (w tym 1 z orzeczeniem). Aktualizacja PKD jest planowana w październiku 2026 r.', source:'', sourceLabel:'Odpowiedź Urzędu Gminy Domaniów z 08.09.2026 i załączona informacja Wójta z 15.03.2026' },
       'Jelcz-Laskowice': { asOf:'04.03.2026', preschool:'1 666,00 zł', point:'brak opublikowanej kwoty', note:'Stawka dla przedszkola niepublicznego podana przez zastępcę burmistrza; źródło prasowe, nie publikacja BIP.', source:'https://www.tuolawa.pl/artykul/44057%2Cpubliczne-pelne-prywatne-drogie-goraca-dyskusja-o-przedszkolach-i-problemach-rekrutacyjnych', sourceLabel:'Gazeta Powiatowa — wypowiedź zastępcy burmistrza' },
       'Kąty Wrocławskie': { asOf:'16.01.2026', pkd:'2 160,48 zł', preschool:'1 620,36 zł', point:'864,19 zł', note:'Stawka punktu to 40% oficjalnej PKD; pozostałe kwoty opublikował samorząd.', source:'https://bip.katywroclawskie.pl/pliki/katywroclawskie/zalaczniki/21987/2026.pdf', sourceLabel:'BIP Gminy Kąty Wrocławskie — stawki 2026' },
       'Siechnice': { asOf:'marzec 2026', pkd:'2 113,98 zł', preschool:'1 585,49 zł', point:'845,59 zł', note:'Standardowe przedszkole: 75% PKD. Placówka wyłoniona w konkursie może otrzymywać 100% PKD, czyli 2 113,98 zł. Stawka punktu to wyliczenie 40% PKD.', source:'https://siechnice.gmina.pl/aktualnosc-7139-otwarty_konkurs_ofert_na_realizacje.html', sourceLabel:'Gmina Siechnice — konkurs i stawki dotacji' },
@@ -146,8 +147,13 @@
         fundingDetails.innerHTML = `<p class="funding-missing"><strong>${esc(authority)}</strong><br>Nie znalazłem potwierdzonej, aktualnej publikacji stawki na 2026 r. w oficjalnym serwisie samorządu. Nie podaję kwoty szacunkowej.</p>`;
         return;
       }
+      const source = data.source ? `<a href="${esc(data.source)}" target="_blank" rel="noreferrer">${esc(data.sourceLabel)}</a>` : esc(data.sourceLabel);
+      if (data.rows) {
+        fundingDetails.innerHTML = `<div class="funding-values">${data.rows.map(row => `<div class="funding-value"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join('')}</div><p class="funding-source">Stan na ${esc(data.asOf)} · ${source}</p><p class="funding-note">${esc(data.note)}</p>`;
+        return;
+      }
       const pkd = data.pkd ? `<div class="funding-value"><span>PKD / 100% miesięcznie</span><strong>${esc(data.pkd)}</strong></div>` : '';
-      fundingDetails.innerHTML = `<div class="funding-values"><div class="funding-value"><span>przedszkole niepubliczne / mies.</span><strong>${esc(data.preschool)}</strong></div><div class="funding-value"><span>niepubliczny punkt / mies.</span><strong>${esc(data.point)}</strong></div>${pkd}</div><p class="funding-source">Stan na ${esc(data.asOf)} · <a href="${esc(data.source)}" target="_blank" rel="noreferrer">${esc(data.sourceLabel)}</a></p><p class="funding-note">${esc(data.note)}</p>`;
+      fundingDetails.innerHTML = `<div class="funding-values"><div class="funding-value"><span>przedszkole niepubliczne / mies.</span><strong>${esc(data.preschool)}</strong></div><div class="funding-value"><span>niepubliczny punkt / mies.</span><strong>${esc(data.point)}</strong></div>${pkd}</div><p class="funding-source">Stan na ${esc(data.asOf)} · ${source}</p><p class="funding-note">${esc(data.note)}</p>`;
     }
     function selectFundingFor(d, openPanel = false) {
       if (d.sector !== 'preschool') return;
@@ -160,6 +166,7 @@
       const authority = fundingAuthority(d);
       const data = fundingData[authority];
       if (!data) return `<p class="subsidy"><strong>Dofinansowanie — ${esc(authority)}:</strong><br>Brak potwierdzonej publikacji stawki na 2026 r.</p>`;
+      if (data.popupText) return `<p class="subsidy"><strong>Dofinansowanie — ${esc(authority)}:</strong><br>${esc(data.popupText)}<br>Źródło: ${esc(data.sourceLabel)} · stan ${esc(data.asOf)}</p>`;
       const rate = d.status === 'publiczna' ? `Placówka publiczna — stawka dla placówki niepublicznej nie ma tu bezpośredniego zastosowania.${data.pkd ? ` PKD / 100%: ${esc(data.pkd)} mies.` : ''}` : `${d.type === 'Punkt przedszkolny' ? 'punkt niepubliczny' : 'przedszkole niepubliczne'}: <strong>${esc(d.type === 'Punkt przedszkolny' ? data.point : data.preschool)} / mies.</strong>`;
       return `<p class="subsidy"><strong>Dofinansowanie — ${esc(authority)}:</strong><br>${rate}<br><a href="${esc(data.source)}" target="_blank" rel="noreferrer">źródło i data: ${esc(data.asOf)}</a></p>`;
     }
